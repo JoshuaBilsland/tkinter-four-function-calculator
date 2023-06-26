@@ -8,7 +8,7 @@ class Calculator:
         self.__window.configure(bg="black")
         self.__window.minsize(250,400)
        
-        self.__display = tk.Entry(self.__window, width=20, font=("Montserrat", 16))
+        self.__display = tk.Entry(self.__window, width=20, state="readonly", font=("Montserrat", 16))
         self.__display.grid(row=0, column=0, columnspan=4, sticky="NSEW")
         
         # Set the parameters each button will have
@@ -74,11 +74,26 @@ class Calculator:
         self.__window.grid_rowconfigure(5, weight=1)             
         
     def makeButton(self, text, row, column, bg, fg, width, col_span, sticky):
-        button = tk.Button(text=text, bg=bg, fg=fg, width=width)
+        button = tk.Button(text=text, bg=bg, fg=fg, width=width, command=lambda: self.buttonClicked(text))
         button.grid(row=row, column=column, columnspan=col_span, sticky=sticky)
         
     def display(self):
         self.__window.mainloop()
+        
+    def buttonClicked(self, buttonText):
+        if buttonText == "CLR":
+            self.__display.config(state="normal")
+            self.__display.delete(0,tk.END) # Delete everything in the entry widget
+            self.__display.config(state="readonly")
+        elif buttonText == "=":
+            print("equals")
+        else:
+            self.__display.config(state="normal")
+            self.__display.insert(tk.END, buttonText)
+            self.__display.config(state="readonly")
+            requiredWidth = len(self.__display.get()) + 10
+            self.__display.config(width=requiredWidth)
+                    
         
 if __name__ == "__main__":    
     calculator = Calculator()
