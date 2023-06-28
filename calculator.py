@@ -4,6 +4,7 @@ import shuntingYard
 class Calculator:
     def __init__(self):
         self.__window = tk.Tk()
+        self.__resultDisplaying = False # Tracks if the value in display is a result or equation
         
         self.__window.title("Four Function Calculator")
         self.__window.configure(bg="black")
@@ -83,6 +84,11 @@ class Calculator:
     def display(self):
         self.__window.mainloop()
         
+
+    def updateWidth(self):
+        requiredWidth = len(self.__display.get()) + 2
+        self.__display.config(width=requiredWidth)
+        
         
     def buttonClicked(self, buttonText):
         if buttonText == "CLR":
@@ -92,13 +98,20 @@ class Calculator:
         elif buttonText == "=":
             postfix = shuntingYard.shuntingYard(self.__display.get())
             result = self.evaluatePostfix(postfix)
-            print(result)
+            self.__display.config(state="normal")
+            self.__display.delete(0,tk.END)
+            self.__display.insert(0, result)
+            self.__display.config(state="readonly")
+            self.__resultDisplaying = True
+            self.updateWidth()
         else:
             self.__display.config(state="normal")
+            if self.__resultDisplaying:
+                self.__display.delete(0,tk.END)
             self.__display.insert(tk.END, buttonText)
             self.__display.config(state="readonly")
-            requiredWidth = len(self.__display.get()) + 2
-            self.__display.config(width=requiredWidth)
+            self.updateWidth()
+            self.__resultDisplaying = False
                     
                     
     def evaluatePostfix(self, postfixString):
