@@ -1,4 +1,5 @@
 import tkinter as tk
+import shuntingYard
 
 class Calculator:
     def __init__(self):
@@ -73,12 +74,15 @@ class Calculator:
         self.__window.grid_rowconfigure(4, weight=1)      
         self.__window.grid_rowconfigure(5, weight=1)             
         
+        
     def makeButton(self, text, row, column, bg, fg, width, col_span, sticky):
         button = tk.Button(text=text, bg=bg, fg=fg, width=width, command=lambda: self.buttonClicked(text))
         button.grid(row=row, column=column, columnspan=col_span, sticky=sticky)
         
+        
     def display(self):
         self.__window.mainloop()
+        
         
     def buttonClicked(self, buttonText):
         if buttonText == "CLR":
@@ -86,14 +90,56 @@ class Calculator:
             self.__display.delete(0,tk.END) # Delete everything in the entry widget
             self.__display.config(state="readonly")
         elif buttonText == "=":
-            print("equals")
+            postfix = shuntingYard.shuntingYard(self.__display.get())
+            result = self.evaluatePostfix(postfix)
+            print(result)
         else:
             self.__display.config(state="normal")
             self.__display.insert(tk.END, buttonText)
             self.__display.config(state="readonly")
-            requiredWidth = len(self.__display.get()) + 10
+            requiredWidth = len(self.__display.get()) + 2
             self.__display.config(width=requiredWidth)
                     
+                    
+    def evaluatePostfix(self, postfixString):
+        stack = []
+       
+        postfixAsList = postfixString.split("|")
+        
+        for token in postfixAsList:
+            if token.isdigit():
+                stack.append(int(token))
+            elif (token.count(".") == 1 and token.replace(".", "").isdigit()):
+                stack.append(float(token))
+            else:
+                if len(stack) < 2:
+                    return "Error: Not enough numbers"
+                else:
+                    numTwo = stack.pop()
+                    numOne = stack.pop()
+                    result = self.performCalculation(numOne, numTwo, token)
+                    if type(result) == str:
+                        return "Error: Division by zero"
+                    else:
+                        stack.append(result)
+
+        if len(stack) != 1:
+            return "Error: Too many numbers"
+        else:
+            return stack.pop()
+        
+    def performCalculation(self, numOne, numTwo, operator):
+        if operator == "+":
+            return numOne + numTwo
+        elif operator == "-":
+            return numOne - numTwo
+        elif operator == "*":
+            return numOne * numTwo
+        elif operator == "/":
+            if numTwo == 0:
+                return "Error: Division by zero"
+            return numOne / numTwo
+        
         
 if __name__ == "__main__":    
     calculator = Calculator()
